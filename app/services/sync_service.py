@@ -18,11 +18,40 @@ class SyncService:
     def __init__(self, client=None, drive=None):
         self.client = client or OpenAI(api_key=settings.openai_api_key)
         self.drive = drive or DriveService()
-
     @staticmethod
     def load_manifest() -> dict:
-        if not MANIFEST.exists(): return {"vector_store_id": "", "documents": {}}
+        import base64
+
+        encoded = os.getenv("DOCUMENT_MANIFEST_B64", "").strip()
+
+        if encoded:
+            try:
+                raw = base64.b64decode(encoded, validate=True)
+                data = json.loads(raw.decode("utf-8"))
+
+                if not isinstance(data, dict):
+                    raise ValueError("El manifiesto debe ser un objeto")
+
+                if not isinstance(data.get("documents"), dict):
+                    raise ValueError("El inventario no es válido")
+
+                return data
+
+            except (ValueError, UnicodeError) as exc:
+                raise RuntimeError(
+                    "DOCUMENT_MANIFEST_B64 no es válido"
+                ) from exc
+
+        if os.getenv("VERCEL"):
+            raise RuntimeError(
+                "Falta DOCUMENT_MANIFEST_B64 en Vercel"
+            )
+
+        if not MANIFEST.exists():
+            return {"vector_store_id": "", "documents": {}}
+
         return json.loads(MANIFEST.read_text(encoding="utf-8"))
+
 
     @staticmethod
     def save_manifest(data: dict):
