@@ -14,7 +14,6 @@ class Settings:
     drive_folder_id: str = os.getenv("GOOGLE_DRIVE_FOLDER_ID", "")
     vector_store_id: str = os.getenv("VECTOR_STORE_ID", "")
     local_admin_key: str = os.getenv("LOCAL_ADMIN_KEY", "")
-    app_access_password: str = os.getenv("APP_ACCESS_PASSWORD", "")
     vercel_mode: bool = bool(os.getenv("VERCEL"))
 
 
